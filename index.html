@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Т-Путешествия — составное бронирование</title>
+  <style>
+    :root {
+      --bg: #eef0f2;
+      --screen: #f5f6f7;
+      --surface: #ffffff;
+      --text: #151515;
+      --muted: #6b7178;
+      --line: #d8dce1;
+      --accent: #ffdd2d;
+      --accent-hover: #f7cf00;
+      --success: #e1f5e7;
+      --success-text: #147333;
+      --warning: #fff3c4;
+      --warning-text: #7b5b00;
+      --danger: #ffe8e8;
+      --danger-text: #a52a2a;
+      --radius: 20px;
+      --radius-small: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, 1440px);
+      gap: 140px;
+      padding: 120px;
+      align-items: start;
+    }
+
+    .screen-wrap { display: flex; flex-direction: column; gap: 20px; }
+    .screen-label { font-size: 24px; font-weight: 700; color: #45494e; }
+
+    .screen {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: var(--screen);
+      border: 2px solid #c8ccd1;
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      height: 72px;
+      flex: 0 0 72px;
+      padding: 0 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand { font-size: 20px; font-weight: 750; }
+    .nav { display: flex; align-items: center; gap: 28px; font-size: 15px; }
+    .nav-active { font-weight: 700; }
+    .nav-muted { color: var(--muted); }
+
+    .content {
+      height: 828px;
+      padding: 44px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .content.narrow { padding-left: 190px; padding-right: 190px; }
+    h1 { margin: 0; font-size: 36px; line-height: 1.15; letter-spacing: -0.7px; }
+    h2 { margin: 0; font-size: 22px; line-height: 1.25; }
+    h3 { margin: 0; font-size: 17px; line-height: 1.3; }
+    p { margin: 0; font-size: 16px; line-height: 1.45; }
+    .muted { color: var(--muted); }
+
+    .search-row {
+      min-height: 76px;
+      display: grid;
+      grid-template-columns: 1.05fr 1.05fr 1fr .9fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field-label { font-size: 13px; color: var(--muted); }
+    .field-value {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 15px;
+    }
+
+    .button {
+      min-height: 48px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .button.secondary { background: #e8eaed; }
+    .button.full { width: 100%; }
+
+    .columns {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 400px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .service-list { display: flex; flex-direction: column; gap: 12px; }
+    .service-card {
+      min-height: 96px;
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-small);
+    }
+
+    .service-card.compact { min-height: 88px; }
+    .service-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 13px;
+      background: #eceef1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .service-main { display: flex; flex-direction: column; gap: 6px; }
+    .service-title { font-size: 17px; font-weight: 700; }
+    .service-meta { color: var(--muted); font-size: 14px; }
+    .service-action { font-size: 14px; font-weight: 700; }
+
+    .summary {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .summary-line { display: flex; justify-content: space-between; gap: 18px; font-size: 15px; }
+    .summary-total { padding-top: 17px; border-top: 1px solid var(--line); font-weight: 750; font-size: 17px; }
+    .info-note {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      border-radius: var(--radius-small);
+      background: #eceff2;
+    }
+
+    .status-page { gap: 22px; }
+    .status-hero {
+      padding: 24px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .status-hero.warning { background: var(--warning); color: var(--warning-text); border-color: #ead47c; }
+    .status-hero.success { background: var(--success); color: var(--success-text); border-color: #b9ddc4; }
+    .status-hero.danger { background: var(--danger); color: var(--danger-text); border-color: #ecc3c3; }
+    .status-copy { display: flex; flex-direction: column; gap: 8px; }
+    .order-number { font-size: 14px; opacity: .8; }
+
+    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .status-card {
+      min-height: 108px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-small);
+    }
+
+    .status-dot {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eceef1;
+      font-weight: 800;
+    }
+    .status-dot.ok { background: var(--success); color: var(--success-text); }
+    .status-dot.wait { background: var(--warning); color: var(--warning-text); }
+    .status-dot.bad { background: var(--danger); color: var(--danger-text); }
+    .status-name { font-size: 16px; font-weight: 700; }
+    .status-meta { margin-top: 5px; color: var(--muted); font-size: 14px; }
+    .status-value { font-size: 14px; font-weight: 700; }
+
+    .timeline {
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .timeline-row { display: grid; grid-template-columns: 72px 18px 1fr; gap: 12px; align-items: center; }
+    .timeline-time { color: var(--muted); font-size: 13px; }
+    .timeline-mark { width: 10px; height: 10px; border-radius: 50%; background: #b5bac1; }
+    .timeline-mark.ok { background: #2da44e; }
+    .timeline-mark.wait { background: #d6a500; }
+    .timeline-mark.bad { background: #d64242; }
+    .timeline-text { font-size: 14px; }
+
+    /* Screenshot mode: /?screen=1..8 renders one 1440x900 frame. */
+    body.capture-mode { background: var(--screen); }
+    body.capture-mode .board { display: block; padding: 0; }
+    body.capture-mode .screen-wrap { display: none; }
+    body.capture-mode .screen-wrap.capture-active { display: block; }
+    body.capture-mode .screen-label { display: none; }
+    body.capture-mode .screen {
+      border: 0;
+      border-radius: 0;
+    }
+
+    .footer-actions { display: flex; justify-content: flex-end; gap: 12px; }
+    .placeholder-line { height: 12px; border-radius: 8px; background: #e4e6e9; }
+    .stepper { display: flex; gap: 10px; }
+    .step {
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .step.done { color: var(--text); }
+    .step.active { color: var(--text); border: 2px solid #222; padding: 9px 13px; }
+    .choice-list { display: flex; flex-direction: column; gap: 12px; }
+    .choice-card {
+      min-height: 132px;
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) 170px;
+      gap: 16px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-small);
+    }
+    .choice-card.selected { border: 2px solid #222; padding: 17px 19px; }
+    .choice-side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .choice-price { font-size: 18px; font-weight: 750; }
+    .choice-button { min-height: 36px; padding: 0 16px; }
+    .choice-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .tag { padding: 5px 8px; background: #eceef1; border-radius: 8px; color: #555b62; font-size: 12px; }
+    .radio-mark { width: 22px; height: 22px; border: 2px solid #767c84; border-radius: 50%; }
+    .selected .radio-mark { border: 7px solid #222; }
+  </style>
+</head>
+<body>
+  <main class="board">
+    <section class="screen-wrap">
+      <div class="screen-label">01 — Параметры поездки и авиабилет</div>
+      <article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Собрать поездку</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content">
+        <h1>Соберите поездку целиком</h1><p class="muted">Сначала задайте параметры, затем выберите каждую услугу</p>
+        <div class="search-row"><label class="field"><span class="field-label">Откуда</span><span class="field-value">Москва</span></label><label class="field"><span class="field-label">Куда</span><span class="field-value">Сочи</span></label><label class="field"><span class="field-label">Даты</span><span class="field-value">12–18 октября</span></label><label class="field"><span class="field-label">Путешественники</span><span class="field-value">2 человека</span></label><button class="button">Найти варианты</button></div>
+        <div class="stepper"><span class="step active">1. Авиабилет</span><span class="step">2. Отель</span><span class="step">3. Страховка</span><span class="step">4. Трансфер</span></div>
+        <div class="columns"><div class="choice-list"><h2>Выбранный авиабилет</h2><div class="choice-card selected"><div class="service-icon">А</div><div class="service-main"><div class="service-title">Москва → Сочи</div><div class="service-meta">12 октября · 10:20–14:05 · без пересадок</div><div class="choice-tags"><span class="tag">Багаж 23 кг</span><span class="tag">2 пассажира</span></div></div><div class="choice-side"><div class="choice-price">18 400 ₽</div><button class="button secondary choice-button">Изменить</button></div></div></div>
+          <aside class="summary"><h2>Ваша поездка</h2><p class="muted">Москва → Сочи · 12–18 октября</p><div class="summary-line"><span>Авиабилет</span><b>18 400 ₽</b></div><div class="summary-line"><span>Отель</span><span class="muted">не выбран</span></div><div class="summary-line"><span>Страховка</span><span class="muted">не выбрана</span></div><div class="summary-line"><span>Трансфер</span><span class="muted">не выбран</span></div><div class="summary-line summary-total"><span>Итого</span><span>18 400 ₽</span></div><button class="button full">Выбрать отель</button></aside></div>
+      </div></article>
+    </section>
+
+    <section class="screen-wrap">
+      <div class="screen-label">02 — Выбор отеля</div>
+      <article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Собрать поездку</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content">
+        <h1>Выберите отель</h1><p class="muted">Сочи · 12–18 октября · 2 гостя</p><div class="stepper"><span class="step done">✓ Авиабилет</span><span class="step active">2. Отель</span><span class="step">3. Страховка</span><span class="step">4. Трансфер</span></div>
+        <div class="columns"><div class="choice-list">
+          <div class="choice-card selected"><div class="service-icon">О</div><div class="service-main"><div class="service-title">Sea Galaxy Hotel</div><div class="service-meta">4★ · 1,2 км от центра · завтрак включён</div><div class="choice-tags"><span class="tag">Бесплатная отмена</span><span class="tag">Оценка 9,1</span></div></div><div class="choice-side"><div class="choice-price">31 200 ₽</div><button class="button choice-button">Выбрано</button></div></div>
+          <div class="choice-card"><div class="service-icon">О</div><div class="service-main"><div class="service-title">Grand Karat Sochi</div><div class="service-meta">5★ · 0,4 км от центра · завтрак включён</div><div class="choice-tags"><span class="tag">Спа</span><span class="tag">Оценка 9,3</span></div></div><div class="choice-side"><div class="choice-price">36 800 ₽</div><button class="button secondary choice-button">Выбрать</button></div></div>
+          <div class="choice-card"><div class="service-icon">О</div><div class="service-main"><div class="service-title">Gamma Sirius</div><div class="service-meta">4★ · Олимпийский парк · без питания</div><div class="choice-tags"><span class="tag">У моря</span><span class="tag">Оценка 8,7</span></div></div><div class="choice-side"><div class="choice-price">27 600 ₽</div><button class="button secondary choice-button">Выбрать</button></div></div>
+        </div><aside class="summary"><h2>Ваша поездка</h2><div class="summary-line"><span>Авиабилет</span><b>18 400 ₽</b></div><div class="summary-line"><span>Отель</span><b>31 200 ₽</b></div><div class="summary-line"><span>Страховка</span><span class="muted">не выбрана</span></div><div class="summary-line"><span>Трансфер</span><span class="muted">не выбран</span></div><div class="summary-line summary-total"><span>Итого</span><span>49 600 ₽</span></div><button class="button full">Продолжить к страховке</button></aside></div>
+      </div></article>
+    </section>
+
+    <section class="screen-wrap">
+      <div class="screen-label">03 — Выбор страховки</div>
+      <article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Собрать поездку</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content">
+        <h1>Выберите страховку</h1><p class="muted">Полис действует на всю поездку для двух путешественников</p><div class="stepper"><span class="step done">✓ Авиабилет</span><span class="step done">✓ Отель</span><span class="step active">3. Страховка</span><span class="step">4. Трансфер</span></div>
+        <div class="columns"><div class="choice-list">
+          <div class="choice-card selected"><div class="radio-mark"></div><div class="service-main"><div class="service-title">Базовая защита</div><div class="service-meta">Медицинские расходы до 3 000 000 ₽</div><div class="choice-tags"><span class="tag">Врач и лекарства</span><span class="tag">Багаж</span></div></div><div class="choice-side"><div class="choice-price">1 490 ₽</div><div class="service-action">Выбрано</div></div></div>
+          <div class="choice-card"><div class="radio-mark"></div><div class="service-main"><div class="service-title">Расширенная защита</div><div class="service-meta">Медицинские расходы до 6 000 000 ₽</div><div class="choice-tags"><span class="tag">Активный отдых</span><span class="tag">Отмена поездки</span></div></div><div class="choice-side"><div class="choice-price">2 990 ₽</div><button class="button secondary choice-button">Выбрать</button></div></div>
+          <div class="choice-card"><div class="radio-mark"></div><div class="service-main"><div class="service-title">Без страховки</div><div class="service-meta">Продолжить поездку без страхового полиса</div></div><div class="choice-side"><div class="choice-price">0 ₽</div><button class="button secondary choice-button">Выбрать</button></div></div>
+        </div><aside class="summary"><h2>Ваша поездка</h2><div class="summary-line"><span>Авиабилет</span><b>18 400 ₽</b></div><div class="summary-line"><span>Отель</span><b>31 200 ₽</b></div><div class="summary-line"><span>Страховка</span><b>1 490 ₽</b></div><div class="summary-line"><span>Трансфер</span><span class="muted">не выбран</span></div><div class="summary-line summary-total"><span>Итого</span><span>51 090 ₽</span></div><button class="button full">Продолжить к трансферу</button></aside></div>
+      </div></article>
+    </section>
+
+    <section class="screen-wrap">
+      <div class="screen-label">04 — Выбор трансфера</div>
+      <article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Собрать поездку</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content">
+        <h1>Выберите трансфер</h1><p class="muted">Аэропорт Сочи → Sea Galaxy Hotel</p><div class="stepper"><span class="step done">✓ Авиабилет</span><span class="step done">✓ Отель</span><span class="step done">✓ Страховка</span><span class="step active">4. Трансфер</span></div>
+        <div class="columns"><div class="choice-list">
+          <div class="choice-card selected"><div class="radio-mark"></div><div class="service-main"><div class="service-title">Стандарт</div><div class="service-meta">Седан · до 3 пассажиров · встреча с табличкой</div><div class="choice-tags"><span class="tag">Бесплатное ожидание 30 минут</span></div></div><div class="choice-side"><div class="choice-price">900 ₽</div><div class="service-action">Выбрано</div></div></div>
+          <div class="choice-card"><div class="radio-mark"></div><div class="service-main"><div class="service-title">Минивэн</div><div class="service-meta">До 6 пассажиров · увеличенный багажник</div></div><div class="choice-side"><div class="choice-price">1 600 ₽</div><button class="button secondary choice-button">Выбрать</button></div></div>
+          <div class="choice-card"><div class="radio-mark"></div><div class="service-main"><div class="service-title">Без трансфера</div><div class="service-meta">Добраться из аэропорта самостоятельно</div></div><div class="choice-side"><div class="choice-price">0 ₽</div><button class="button secondary choice-button">Выбрать</button></div></div>
+        </div><aside class="summary"><h2>Ваша поездка</h2><div class="summary-line"><span>Авиабилет</span><b>18 400 ₽</b></div><div class="summary-line"><span>Отель</span><b>31 200 ₽</b></div><div class="summary-line"><span>Страховка</span><b>1 490 ₽</b></div><div class="summary-line"><span>Трансфер</span><b>900 ₽</b></div><div class="summary-line summary-total"><span>Итого</span><span>51 990 ₽</span></div><button class="button full">Проверить заказ</button></aside></div>
+      </div></article>
+    </section>
+
+    <section class="screen-wrap">
+      <div class="screen-label">05 — Подтверждение заказа</div>
+      <article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Собрать поездку</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content">
+        <h1>Проверьте поездку</h1><p class="muted">Перед бронированием убедитесь, что всё выбрано правильно</p><div class="columns"><div class="service-list">
+          <div class="service-card compact"><div class="service-icon">А</div><div class="service-main"><div class="service-title">Авиабилет</div><div class="service-meta">Москва → Сочи · 12 октября · 2 пассажира</div></div><div class="service-action">18 400 ₽</div></div>
+          <div class="service-card compact"><div class="service-icon">О</div><div class="service-main"><div class="service-title">Отель</div><div class="service-meta">Sea Galaxy Hotel · 12–18 октября · 6 ночей</div></div><div class="service-action">31 200 ₽</div></div>
+          <div class="service-card compact"><div class="service-icon">С</div><div class="service-main"><div class="service-title">Страховка</div><div class="service-meta">Базовая защита · 2 путешественника</div></div><div class="service-action">1 490 ₽</div></div>
+          <div class="service-card compact"><div class="service-icon">Т</div><div class="service-main"><div class="service-title">Трансфер</div><div class="service-meta">Аэропорт Сочи → Sea Galaxy Hotel</div></div><div class="service-action">900 ₽</div></div>
+          <div class="info-note"><h3>Как проходит бронирование</h3><p class="muted">Каждая услуга подтверждается отдельно. Если одна не подтвердится, мы отменим уже оформленные услуги.</p></div>
+        </div><aside class="summary"><h2>Итого к бронированию</h2><div class="summary-line"><span>Авиабилет</span><b>18 400 ₽</b></div><div class="summary-line"><span>Отель</span><b>31 200 ₽</b></div><div class="summary-line"><span>Страховка</span><b>1 490 ₽</b></div><div class="summary-line"><span>Трансфер</span><b>900 ₽</b></div><div class="summary-line summary-total"><span>К оплате</span><span>51 990 ₽</span></div><button class="button full">Забронировать за 51 990 ₽</button><button class="button secondary full">Вернуться к выбору</button></aside></div>
+      </div></article>
+    </section>
+
+    <section class="screen-wrap"><div class="screen-label">06 — Бронирование в процессе</div><article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Заказ № TP-10482</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content narrow status-page">
+      <div class="status-hero warning"><div class="status-copy"><h1>Бронируем вашу поездку</h1><p>Не закрывайте страницу — обычно это занимает до минуты</p></div><div class="order-number">Заказ № TP-10482 · 51 990 ₽</div></div>
+      <div class="status-grid"><div class="status-card"><div class="status-dot">А</div><div><div class="status-name">Авиабилет</div><div class="status-meta">18 400 ₽ · Москва → Сочи</div></div><div class="status-value">Подтверждён</div></div><div class="status-card"><div class="status-dot">О</div><div><div class="status-name">Отель</div><div class="status-meta">31 200 ₽ · Sea Galaxy Hotel</div></div><div class="status-value">Подтверждаем</div></div><div class="status-card"><div class="status-dot">С</div><div><div class="status-name">Страховка</div><div class="status-meta">1 490 ₽ · Базовая защита</div></div><div class="status-value">Ожидает</div></div><div class="status-card"><div class="status-dot">Т</div><div><div class="status-name">Трансфер</div><div class="status-meta">900 ₽ · Аэропорт → отель</div></div><div class="status-value">Ожидает</div></div></div>
+      <div class="timeline"><h2>История заказа</h2><div class="timeline-row"><span class="timeline-time">12:01:04</span><span class="timeline-mark ok"></span><span class="timeline-text">Заказ создан</span></div><div class="timeline-row"><span class="timeline-time">12:01:07</span><span class="timeline-mark ok"></span><span class="timeline-text">Авиабилет подтверждён</span></div><div class="timeline-row"><span class="timeline-time">12:01:08</span><span class="timeline-mark wait"></span><span class="timeline-text">Подтверждаем отель</span></div></div>
+    </div></article></section>
+
+    <section class="screen-wrap"><div class="screen-label">07 — Заказ успешно оформлен</div><article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Заказ № TP-10482</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content narrow status-page">
+      <div class="status-hero success"><div class="status-copy"><h1>Поездка забронирована</h1><p>Все услуги подтверждены</p></div><div class="order-number">Заказ № TP-10482 · 51 990 ₽</div></div>
+      <div class="status-grid"><div class="status-card"><div class="status-dot">А</div><div><div class="status-name">Авиабилет</div><div class="status-meta">18 400 ₽ · Москва → Сочи</div></div><div class="status-value">Подтверждён</div></div><div class="status-card"><div class="status-dot">О</div><div><div class="status-name">Отель</div><div class="status-meta">31 200 ₽ · Sea Galaxy Hotel</div></div><div class="status-value">Подтверждён</div></div><div class="status-card"><div class="status-dot">С</div><div><div class="status-name">Страховка</div><div class="status-meta">1 490 ₽ · Базовая защита</div></div><div class="status-value">Оформлена</div></div><div class="status-card"><div class="status-dot">Т</div><div><div class="status-name">Трансфер</div><div class="status-meta">900 ₽ · Аэропорт → отель</div></div><div class="status-value">Подтверждён</div></div></div>
+      <div class="timeline"><h2>История заказа</h2><div class="timeline-row"><span class="timeline-time">12:01:04</span><span class="timeline-mark ok"></span><span class="timeline-text">Заказ создан</span></div><div class="timeline-row"><span class="timeline-time">12:01:17</span><span class="timeline-mark ok"></span><span class="timeline-text">Все услуги подтверждены</span></div><div class="timeline-row"><span class="timeline-time">12:01:18</span><span class="timeline-mark ok"></span><span class="timeline-text">Заказ успешно завершён</span></div></div><div class="footer-actions"><button class="button secondary">Вернуться на главную</button><button class="button">Открыть заказ</button></div>
+    </div></article></section>
+
+    <section class="screen-wrap"><div class="screen-label">08 — Ошибка и компенсация</div><article class="screen"><header class="header"><div class="brand">Т-Путешествия · прототип</div><nav class="nav"><span class="nav-active">Заказ № TP-10483</span><span class="nav-muted">Мои заказы</span></nav></header><div class="content narrow status-page">
+      <div class="status-hero danger"><div class="status-copy"><h1>Отель не подтвердил номер</h1><p>Мы отменяем авиабилет. Повторного списания не будет.</p></div><div class="order-number">Заказ № TP-10483 · 51 990 ₽</div></div>
+      <div class="status-grid"><div class="status-card"><div class="status-dot">А</div><div><div class="status-name">Авиабилет</div><div class="status-meta">18 400 ₽ · Москва → Сочи</div></div><div class="status-value">Отменяется</div></div><div class="status-card"><div class="status-dot">О</div><div><div class="status-name">Отель</div><div class="status-meta">31 200 ₽ · номер недоступен</div></div><div class="status-value">Не подтверждён</div></div><div class="status-card"><div class="status-dot">С</div><div><div class="status-name">Страховка</div><div class="status-meta">1 490 ₽ · оформление не начиналось</div></div><div class="status-value">Не оформлена</div></div><div class="status-card"><div class="status-dot">Т</div><div><div class="status-name">Трансфер</div><div class="status-meta">900 ₽ · оформление не начиналось</div></div><div class="status-value">Не оформлен</div></div></div>
+      <div class="timeline"><h2>История заказа</h2><div class="timeline-row"><span class="timeline-time">12:01:04</span><span class="timeline-mark ok"></span><span class="timeline-text">Заказ создан</span></div><div class="timeline-row"><span class="timeline-time">12:01:07</span><span class="timeline-mark ok"></span><span class="timeline-text">Авиабилет подтверждён</span></div><div class="timeline-row"><span class="timeline-time">12:01:13</span><span class="timeline-mark bad"></span><span class="timeline-text">Отель отказал: номер недоступен</span></div><div class="timeline-row"><span class="timeline-time">12:01:14</span><span class="timeline-mark wait"></span><span class="timeline-text">Началась отмена авиабилета</span></div></div><div class="footer-actions"><button class="button secondary">Собрать заново</button><button class="button">Подобрать другой отель</button></div>
+    </div></article></section>
+  </main>
+  <script>
+    const screenNumber = Number(new URLSearchParams(window.location.search).get('screen'));
+    const screens = [...document.querySelectorAll('.screen-wrap')];
+
+    if (screenNumber >= 1 && screenNumber <= screens.length) {
+      document.body.classList.add('capture-mode');
+      screens[screenNumber - 1].classList.add('capture-active');
+    }
+  </script>
+</body>
+</html>
